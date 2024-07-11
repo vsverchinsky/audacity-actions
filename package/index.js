@@ -169,7 +169,8 @@ async function run() {
 
         const artifactClient = new artifact.DefaultArtifactClient();
 
-        for(const file of filesList) {
+        if(filesList.length == 1)
+        {
             const ext = path.extname(file);
             const name = path.basename(file, ext);
             const artifactName = `${name}${postfix}`;
@@ -179,7 +180,7 @@ async function run() {
 
                 const filesList = await fileUtils.listDirectory(path.join(packageDir, name));
 
-                helpers.log(`Starting upload files ${filesList} as ${artifactName}`)
+                helpers.log(`Starting upload zipped files ${filesList} as ${artifactName}`);
 
                 await artifactClient.uploadArtifact(artifactName, filesList, packageDir);
             }
@@ -188,6 +189,13 @@ async function run() {
                 await artifactClient.uploadArtifact(artifactName, [ path.join(packageDir, file) ], packageDir);
             }
         }
+        else if (filesList.length > 1)
+        {
+            helpers.log(`Starting upload multiple files ${filesList} as ${artifactName}`);
+            await artifactClient.uploadArtifact(artifactName, filesList, packageDir);
+        }
+        else
+            throw new Error("Nothing to upload");
     } catch (error) {
         helpers.error(error.message);
         core.setFailed(error.message);
